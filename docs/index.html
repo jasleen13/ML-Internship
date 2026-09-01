@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which Pages Under-Capture Clicks? A CTR Opportunity Score for Search Content</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #5a5a5a;
+    --line: #e2e2e2;
+    --accent: #2f6f4f;
+    --bg-card: #f7f7f5;
+    --zebra: #fafaf8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.65;
+    background: #ffffff;
+  }
+  .layout {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 780px);
+    gap: 2.5rem;
+    padding: 3rem 1.5rem 6rem;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { display: none; }
+  }
+  nav.toc {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    font-size: 0.85rem;
+  }
+  nav.toc .toc-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 2px solid var(--line);
+  }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    display: block;
+    padding: 0.35rem 0 0.35rem 0.85rem;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  nav.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+  main { min-width: 0; }
+  header.title-block {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  h1 {
+    font-size: 2rem;
+    line-height: 1.25;
+    margin: 0 0 0.75rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin: 0 0 1.25rem;
+  }
+  .meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.75rem;
+    scroll-margin-top: 1.5rem;
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin-top: 2rem;
+  }
+  p { margin: 0.9rem 0; }
+  ul, ol { margin: 0.9rem 0; padding-left: 1.4rem; }
+  li { margin: 0.35rem 0; }
+  .abstract {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    border-radius: 4px;
+    margin-top: 1.5rem;
+  }
+  .abstract p { margin: 0.6rem 0; }
+  figure { margin: 1.75rem 0; text-align: center; }
+  figure img {
+    max-width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  figcaption {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+  }
+  th { background: var(--bg-card); font-weight: 600; }
+  tbody tr:nth-child(even) { background: var(--zebra); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code {
+    background: var(--bg-card);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .callout {
+    background: #fdf6e8;
+    border-left: 3px solid #c9962c;
+    padding: 1rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    margin: 1.5rem 0;
+  }
+  .verdict {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    margin-right: 0.4rem;
+  }
+  .mixed { background: #fdf1d6; color: #8a5d00; }
+  .nogo {
+    background: #fdeceb;
+    border-left: 3px solid #c0392b;
+    padding: 1rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    margin: 1.5rem 0;
+  }
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  a { color: var(--accent); }
+  .reason-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--bg-card);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#intro">1. Introduction</a></li>
+      <li><a href="#data">2. Data</a></li>
+      <li><a href="#methodology">3. Methodology</a></li>
+      <li><a href="#results">4. Results</a></li>
+      <li><a href="#limitations">5. Limitations</a></li>
+      <li><a href="#recommendations">6. Recommendations</a></li>
+      <li><a href="#reproducibility">7. Reproducibility</a></li>
+      <li><a href="#acknowledgments">Acknowledgments</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="title-block">
+      <h1>Which Pages Under-Capture Clicks? A Position-Adjusted CTR Opportunity Score for Search Content</h1>
+      <p class="subtitle">A capstone study on FlyRank's ML Internship dataset, CTR / Engagement Opportunity Scoring lane.</p>
+      <p class="meta">Independent research project &middot; built on the FlyRank ML Internship dataset</p>
+    </header>
+
+    <section class="abstract">
+      <h2 style="margin-top:0; border-top:none; padding-top:0;">Abstract</h2>
+      <p><strong>Question:</strong> among search pages that already rank well enough to earn clicks, which ones get meaningfully fewer clicks than other pages at the same position, and how should a content team prioritize reviewing them?</p>
+      <p><strong>Method:</strong> a transparent baseline score ranks pages by how far their observed click-through rate (CTR) falls below the median CTR of peers in the same position tier, scaled by impression volume. A Random Forest classifier was then trained, deliberately excluding CTR itself from its features, to test whether content and engagement signals alone can anticipate CTR underperformance, validated with a client-grouped split to prevent memorizing any one client's style.</p>
+      <p><strong>Result:</strong> the position-tier pattern behind the baseline is strong and well-supported (CTR falls from 0.35% at the top of page one to 0.055% for deep results, across thousands of pages per tier). The honest model, without access to CTR, reaches a ROC AUC of 0.727 against a 0.500 random floor, a real but modest signal, dominated by on-page engagement rate rather than any single obvious feature.</p>
+      <p><strong>Limitations:</strong> this is an observational, decision-support tool, not a causal one; it ranks review priority, it does not predict how much a rewrite would help, and one signal explored (content staleness) returned an inconclusive result that was deliberately left out of the model rather than forced in.</p>
+    </section>
+
+    <h2 id="intro">1. Introduction</h2>
+    <p>Search content teams routinely have more pages than review time. A page can rank well and still fail to earn the clicks its position should produce, a solvable problem, if it can be found. This project asks a narrow, answerable version of that question: among visible, well-ranked pages, which ones under-capture clicks relative to comparable pages, and can that be turned into an honest, ranked review queue?</p>
+    <p>The decision this work supports is simple: an SEO content editor, working down a limited list each week, needs to know which page to open first. The cost of getting it wrong is real but bounded, time spent reviewing a page whose low CTR turns out to be sampling noise rather than a genuine title or snippet problem. That cost shaped the whole design: every score here comes with a volume floor, and every claim below is stated as an association, not a guarantee.</p>
+
+    <h2 id="data">2. Data</h2>
+    <p>The primary dataset is FlyRank's anonymized ML Internship starter release (30,000 content rows), covering a rolling 90-day performance window per page: impressions, clicks, CTR, average search position, content metadata, and engagement signals. All identifiers are pre-scrambled; no client names, domains, or raw queries appear anywhere in this dataset or in this analysis.</p>
+    <p>Every column used is an <em>observed</em> signal, none of FlyRank's internal product decisions (composite health scores, priority flags, workflow labels) are shipped in this release, which is a deliberate design choice on FlyRank's part: it keeps any resulting model honest, since there's no existing decision to accidentally copy.</p>
+    <p>A second, larger release, FlyRank's full search warehouse (hosted on Hugging Face, gated access, roughly 79 million rows in the daily performance table), was also explored to build and verify a formal monthly data contract on real, larger-scale data. That exploration used one representative month and is documented in the project repository; the starter dataset remains the primary basis for the model and results reported here, since it's the release the validation design below was built and tested against end to end.</p>
+    <p><strong>Deliberately excluded:</strong> a 90-day query-mix table from the warehouse release, its fixed trailing window overlaps multiple calendar months and doesn't align with the single-month grain used elsewhere; and, within the starter dataset, two 30-day trend columns, reserved strictly as potential future label material and never used as model inputs.</p>
+
+    <h2 id="methodology">3. Methodology</h2>
+    <h3>Label</h3>
+    <p>A page is flagged <code>is_underperforming</code> if its observed CTR falls below the median CTR of other pages in the same position tier, computed from the same 90-day window as every feature. This is a <strong>current-window descriptive label</strong>, not a forecast: it says a page sits below its peers today, it does not claim that changing the page would improve anything, that would require a controlled before/after test this dataset cannot provide.</p>
+
+    <h3>Baseline</h3>
+    <p>A transparent, hand-written rule ranks candidate pages by:</p>
+    <p><code>score = (ctr_gap &lt; 0) &times; max(0, &minus;ctr_gap) &times; log(1 + impressions_90d)</code></p>
+    <p>restricted to visible pages (<code>impressions_90d &ge; 500</code>) ranking well enough to matter (<code>0 &lt; avg_position &le; 20</code>). Every flagged page carries the reason code <span class="reason-code">low_ctr_visible_page</span>.</p>
+
+    <h3>Features</h3>
+    <p>The model uses only signals knowable at the review moment and never derived from the label itself: impression volume, average position, word count, content age, days since last update, engagement rate, scroll rate, AI-referral traffic share, search volume, competition level, cost-per-click, content type, search intent, and position tier. CTR, the CTR gap, and raw click counts are <strong>deliberately excluded</strong> from the model, since the label is a direct threshold on the CTR gap, including it would let the model read the answer off the input rather than predict anything.</p>
+
+    <h3>Validation design</h3>
+    <p>Pages were split by client (75/25), not at random, since pages from the same client share a publishing template and strategy. A plain random split was tested for comparison and leaked 27 of 28 clients across train and test, inflating apparent precision to a suspicious 1.000; the client-grouped split (zero client overlap) is the number reported throughout this paper.</p>
+
+    <h3>Leakage checks</h3>
+    <p>A confession test confirms the exclusion above was necessary: adding the CTR gap back into the feature set collapses the model's honest ROC AUC of 0.727 up to a trivial 1.000. That collapse is the signature of label leakage, not model skill, and it's why CTR-derived columns stay out of every reported result.</p>
+
+    <h2 id="results">4. Results</h2>
+    <p>The baseline is not a fair benchmark for the model to beat, it's built directly from the same quantity the label thresholds on, so it reaches near-perfect precision by construction. The meaningful comparison is the model against a naive majority-class floor, on the same client-grouped split.</p>
+
+    <table>
+      <thead>
+        <tr><th>Model</th><th class="num">ROC AUC</th><th class="num">Precision@20</th><th class="num">Precision@50</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dummy (majority class floor)</td><td class="num">0.500</td><td class="num">0.650</td><td class="num">0.420</td></tr>
+        <tr><td>Logistic Regression</td><td class="num">0.545</td><td class="num">0.750</td><td class="num">0.640</td></tr>
+        <tr><td>Decision Tree</td><td class="num">0.664</td><td class="num">0.850</td><td class="num">0.780</td></tr>
+        <tr><td>Random Forest</td><td class="num"><strong>0.727</strong></td><td class="num">0.700</td><td class="num">0.680</td></tr>
+      </tbody>
+    </table>
+
+    <figure>
+      <img src="model_vs_baseline_auc.png" alt="Bar chart comparing ROC AUC across the dummy baseline, logistic regression, decision tree, and random forest models against a random-guess floor of 0.5">
+      <figcaption>Fig. 1 &mdash; ROC AUC by model, client-grouped split, dashed line marks the random-guess floor. Random Forest leads on discrimination.</figcaption>
+    </figure>
+
+    <p>Random Forest wins on ROC AUC; the Decision Tree wins on precision@50. Both are reported rather than picking whichever flatters one model, "best" depends on which metric matches how the queue will actually be used. Permutation importance shows on-page engagement rate dominating every other feature by roughly five times, a plausible signal (pages that don't hold visitor attention plausibly also under-earn clicks from the results page) rather than a suspiciously perfect one.</p>
+
+    <figure>
+      <img src="ctr_by_position_tier.png" alt="Bar chart showing mean CTR declining steadily from page 1 through deep search results">
+      <figcaption>Fig. 2 &mdash; The pattern the whole baseline is built on: CTR falls steadily and predictably by position tier, from 0.35% at page one to 0.055% deep.</figcaption>
+    </figure>
+
+    <h2 id="limitations">5. Limitations &amp; Honest Framing</h2>
+    <ul>
+      <li><strong>Observational, not causal.</strong> Every finding here is directional and decision-support: it tells a reviewer where to look first. It does not prove that a specific edit will change a specific page's performance, and no claim in this project should be read as evidence about how a search engine's ranking algorithm works.</li>
+      <li><strong>The label is a proxy, not a forecast.</strong> A page below its tier's median CTR today may or may not improve if reviewed, that causal question needs a controlled experiment this dataset can't run.</li>
+      <li><strong>One signal returned an inconclusive result, and was left out rather than forced in.</strong> <span class="verdict mixed">MIXED</span> Content staleness was checked as a candidate signal: the unfiltered data showed a direction opposite to the hypothesis, driven by a thin, high-variance sample (n=174); once volume-floored to the same standard as the rest of this study, the direction matched expectation but the sample shrank to n=17, too small to trust either way. It was excluded from the final model on that basis.</li>
+      <li><strong>A supporting exploration used a single month of a larger dataset.</strong> That snapshot can't separate a genuine pattern from month-specific seasonality or a mid-month onboarding wave, which is part of why the year-round starter dataset carries the headline results in this paper.</li>
+    </ul>
+
+    <h2 id="recommendations">6. Ranked Recommendations</h2>
+    <p>The baseline produces a full ranked review queue across the candidate pool of 12,023 visible, well-positioned pages spanning 28 clients. Every entry carries the same reason code, with the suggested action split by search intent:</p>
+    <ul>
+      <li><strong>Reason code:</strong> <span class="reason-code">low_ctr_visible_page</span> &mdash; a visible, well-ranked page earning meaningfully fewer clicks than its position-tier peers.</li>
+      <li><strong>Informational / navigational pages</strong> &rarr; <span class="reason-code">rewrite_title_meta</span> (7,252 pages): the title and snippet are usually the whole pitch, there's no purchase signal to add.</li>
+      <li><strong>Transactional / commercial pages</strong> &rarr; <span class="reason-code">improve_snippet_signals</span> (4,771 pages): price, availability, or rating signals in the snippet plausibly move clicks more than title wording alone for these intents.</li>
+    </ul>
+
+    <figure>
+      <img src="action_mix.png" alt="Bar chart showing the split between rewrite_title_meta and improve_snippet_signals actions across the ranked queue">
+      <figcaption>Fig. 3 &mdash; Suggested action mix across the full ranked queue, split by search intent rather than one fix for every page.</figcaption>
+    </figure>
+
+    <div class="nogo">
+      <strong>What should not be automated:</strong> 1,215 pages in this queue show zero clicks despite real impression volume, the single highest-scoring page combines 208,678 impressions with exactly 0 clicks, that combination is exactly where a tracking or indexing artifact hides, not a title problem, and needs a manual check before any action is taken. A further 736 pages sit at position 3 to 4, close enough to the top 3 that a search-results feature (a snippet box, an "also asked" panel) could be suppressing clicks in a way this dataset has no visibility into, no title change fixes that. No page in this queue should be auto-rewritten without a human opening it first.
+    </div>
+
+    <p><strong>Monitoring triggers:</strong> a rebuild (not just a rerun) is warranted if the candidate pool size or base rate drift sharply from today's 12,023 pages / 0.490, if the honest model's ROC AUC falls toward the 0.500 dummy floor on a fresh client-grouped split, or once the staleness signal accumulates enough volume (n &ge; 50) to move off its current MIXED verdict.</p>
+
+    <h2 id="reproducibility">7. Reproducibility</h2>
+    <p>Every number and figure in this paper is generated directly by code in the linked repository, nothing here is manually transcribed or estimated.</p>
+    <ul>
+      <li><strong>Repository:</strong> <a href="https://github.com/jasleen13/ML-Internship" target="_blank" rel="noopener">github.com/jasleen13/ML-Internship</a></li>
+      <li><strong>Capstone notebook:</strong> <code>work/notebooks/capstone.ipynb</code></li>
+      <li><strong>Weekly notebooks behind this work:</strong> research framing (<code>w01</code>), task framing (<code>w02</code>), data contract (<code>w03</code>), baseline (<code>w04</code>), model (<code>w05</code>), validation &amp; leakage audit (<code>w06</code>), action playbook (<code>w07</code>)</li>
+    </ul>
+
+    <footer id="acknowledgments">
+      <p><strong>Acknowledgments &amp; Data Credit</strong><br>
+      Built on the FlyRank ML Internship dataset. Learn more at <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>.</p>
+    </footer>
+  </main>
+
+</div>
+</body>
+</html>
